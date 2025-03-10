@@ -28,20 +28,20 @@ contract TokenTest is Test {
 
     function testInitialSupply() public view {
         uint supply = tokenContract.totalSupply();
-        assertEq(supply, 100 * 10 ** 18);
+        assertEq(supply, 100 ether);
     }
 
     function testMinttoSupply() public {
         uint initialSupply = tokenContract.totalSupply();
-        assertEq(initialSupply, 100 * 10 ** 18);
+        assertEq(initialSupply, 100 ether);
 
         vm.prank(owner);
-        tokenContract.mint(user, 10 * 10 ** 18);
+        tokenContract.mint(user, 10 ether);
 
         uint newSupply = tokenContract.totalSupply();
-        assertEq(newSupply, ((100 * 10 ** 18) + (10 * 10 ** 18)));
+        assertEq(newSupply, ((100 ether) + (10 ether)));
 
         uint userBalance = tokenContract.balanceOf(user);
-        assertEq(userBalance, 10 * 10 ** 18);
+        assertEq(userBalance, 10 ether);
     }
 }

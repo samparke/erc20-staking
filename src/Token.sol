@@ -8,7 +8,7 @@ contract Token is ERC20, Ownable {
     constructor(
         address initialOwner
     ) ERC20("Token", "TKN") Ownable(initialOwner) {
-        _mint(msg.sender, 100 * 10 ** 18);
+        _mint(msg.sender, 100 ether);
     }
 
     function mint(address _recipient, uint256 _amount) public {
