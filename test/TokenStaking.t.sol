@@ -33,10 +33,7 @@ contract TokenStakingTest is Test {
         rewardsToken = new MockRewardERC20();
 
         vm.prank(owner);
-        stakingContract = new TokenStaking(
-            address(stakingToken),
-            address(rewardsToken)
-        );
+        stakingContract = new TokenStaking(address(stakingToken), address(rewardsToken));
 
         stakingToken.transfer(user, 10 ether);
         rewardsToken.transfer(address(stakingContract), 10 ether);
@@ -60,26 +57,26 @@ contract TokenStakingTest is Test {
     }
 
     function testRewardDuration() public view {
-        uint rewardDuration = stakingContract.duration();
+        uint256 rewardDuration = stakingContract.duration();
         assertEq(rewardDuration, 10 days);
     }
 
     function testInitialFinishAtDuration() public view {
-        uint rewardDuration = stakingContract.duration();
-        uint finishAt = stakingContract.finishAt();
-        uint buffer = 2;
+        uint256 rewardDuration = stakingContract.duration();
+        uint256 finishAt = stakingContract.finishAt();
+        uint256 buffer = 2;
 
         assertGt(finishAt, rewardDuration - buffer);
         assertLt(finishAt, rewardDuration + buffer);
     }
 
     function testUpdatedAt() public view {
-        uint updatedAt = stakingContract.updatedAt();
+        uint256 updatedAt = stakingContract.updatedAt();
         assertEq(updatedAt, block.timestamp);
     }
 
     function testUserStakingTokenBalance() public view {
-        uint userStakingTokenBalance = stakingToken.balanceOf(user);
+        uint256 userStakingTokenBalance = stakingToken.balanceOf(user);
         assertEq(userStakingTokenBalance, 10 ether);
     }
 
@@ -108,7 +105,7 @@ contract TokenStakingTest is Test {
         stakingContract.stake(5 ether);
         vm.warp(block.timestamp + 7 days);
 
-        uint earnedRewards = stakingContract.earned(user);
+        uint256 earnedRewards = stakingContract.earned(user);
         assertGt(earnedRewards, 0, "rewards should accumilate over time");
         vm.stopPrank();
     }
@@ -121,13 +118,9 @@ contract TokenStakingTest is Test {
         stakingContract.withdraw(3 ether);
         vm.stopPrank();
 
-        uint amountStaked = stakingContract.getStakerAmountStaked(
-            address(user)
-        );
-        uint reward = stakingContract.getStakerReward(address(user));
-        uint userRewardPerToken = stakingContract.getStakeruserRewardPerToken(
-            address(user)
-        );
+        uint256 amountStaked = stakingContract.getStakerAmountStaked(address(user));
+        uint256 reward = stakingContract.getStakerReward(address(user));
+        uint256 userRewardPerToken = stakingContract.getStakeruserRewardPerToken(address(user));
 
         assertEq(amountStaked, 2 ether);
         assertGt(reward, 0);

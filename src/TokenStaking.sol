@@ -13,37 +13,37 @@ contract TokenStaking {
 
     // the amount of time the rewards last for
     // in a real world scenario, there would either be a fixed pool supply or time where tokens are distributed
-    uint public duration;
+    uint256 public duration;
 
     // in our case, we have an end time. this is the timestamp of when rewards finish
-    uint public finishAt;
+    uint256 public finishAt;
 
     // reward to be provided per second
-    uint public rewardRate;
+    uint256 public rewardRate;
 
     // total staked in the ocntract
-    uint public totalStaked;
+    uint256 public totalStaked;
 
     // minimum of last updated time and reward finish time
-    uint public updatedAt;
+    uint256 public updatedAt;
 
     // the current reward per token stored. Important as this value fluctates with time and number of users providing liquidity
     // the sum of (reward rate * dt * 1e18 / total supply)
-    uint public rewardPerTokenStored;
+    uint256 public rewardPerTokenStored;
 
     // staking details
     struct Staker {
         // amount the user has staked
-        uint amountStaked;
+        uint256 amountStaked;
         // (the rewardPerToken value at the point of staking/unstaking etc)
         // this ensures user receives fair rewards
         // e.g. if they begin staking at 0.5 ether reward per token, they will receive rewards from that point onwards...
         // unlike users who provided liquidity when it was 0.1 rewardPerToken
-        uint userRewardPerToken;
+        uint256 userRewardPerToken;
         // the last time they staked, this is used to calculate the time elapsed to calculate rewards
-        uint lastTimeStaked;
+        uint256 lastTimeStaked;
         // reward to be claimed
-        uint reward;
+        uint256 reward;
     }
 
     // the mapping of users to their staked details
@@ -79,27 +79,24 @@ contract TokenStaking {
         rewardsToken = IERC20(_rewardsToken);
     }
 
-    function lastTimeRewardApplicable() public view returns (uint) {
+    function lastTimeRewardApplicable() public view returns (uint256) {
         // aims to get the minimum between the finish time and current time
         // if reward period is ongoing, the minimum will be the block.timestamp
         return _min(finishAt, block.timestamp);
     }
 
     // if y is greater or equal to x, return x, if not y
-    function _min(uint x, uint y) private pure returns (uint) {
+    function _min(uint256 x, uint256 y) private pure returns (uint256) {
         return x <= y ? x : y;
     }
 
-    function rewardsPerToken() public view returns (uint) {
+    function rewardsPerToken() public view returns (uint256) {
         // if total staked = 0 (no liquidity providers, the rewardPerToken = 0)
         if (totalStaked == 0) {
             return rewardPerTokenStored;
         }
 
-        return
-            rewardPerTokenStored +
-            (rewardRate * (lastTimeRewardApplicable() - updatedAt) * 1e18) /
-            totalStaked;
+        return rewardPerTokenStored + (rewardRate * (lastTimeRewardApplicable() - updatedAt) * 1e18) / totalStaked;
     }
 
     function stake(uint256 amount) external updateReward(msg.sender) {
@@ -124,65 +121,52 @@ contract TokenStaking {
         emit Unstaked(msg.sender, amount);
     }
 
-    function earned(address _account) public view returns (uint) {
-        return
-            ((stakers[_account].amountStaked *
-                (rewardsPerToken() - stakers[_account].userRewardPerToken)) /
-                1e18) + stakers[_account].reward;
+    function earned(address _account) public view returns (uint256) {
+        return ((stakers[_account].amountStaked * (rewardsPerToken() - stakers[_account].userRewardPerToken)) / 1e18)
+            + stakers[_account].reward;
     }
 
     function getReward() external updateReward(msg.sender) {
-        uint reward = stakers[msg.sender].reward;
+        uint256 reward = stakers[msg.sender].reward;
         if (reward > 0) {
             stakers[msg.sender].reward = 0;
             rewardsToken.transfer(msg.sender, reward);
         }
     }
 
-    function setRewardDuration(uint _duration) external onlyOwner {
+    function setRewardDuration(uint256 _duration) external onlyOwner {
         require(finishAt < block.timestamp, "reward duration not finished");
         duration = _duration;
     }
 
-    function notifyRewardAmount(
-        uint _amount
-    ) external onlyOwner updateReward(address(0)) {
+    function notifyRewardAmount(uint256 _amount) external onlyOwner updateReward(address(0)) {
         if (block.timestamp >= finishAt) {
             rewardRate = _amount / duration;
         } else {
-            uint remainingRewards = (finishAt - block.timestamp) * rewardRate;
+            uint256 remainingRewards = (finishAt - block.timestamp) * rewardRate;
             rewardRate = (_amount + remainingRewards) / duration;
         }
 
         require(rewardRate > 0, "reward rate = 0");
-        require(
-            rewardRate * duration <= rewardsToken.balanceOf(address(this)),
-            "reward amount > balance"
-        );
+        require(rewardRate * duration <= rewardsToken.balanceOf(address(this)), "reward amount > balance");
 
         finishAt = block.timestamp + duration;
         updatedAt = block.timestamp;
     }
 
-    function getStakerAmountStaked(
-        address _account
-    ) public view returns (uint) {
+    function getStakerAmountStaked(address _account) public view returns (uint256) {
         return stakers[_account].amountStaked;
     }
 
-    function getStakerLastTimeStaked(
-        address _account
-    ) public view returns (uint) {
+    function getStakerLastTimeStaked(address _account) public view returns (uint256) {
         return stakers[_account].lastTimeStaked;
     }
 
-    function getStakerReward(address _account) public view returns (uint) {
+    function getStakerReward(address _account) public view returns (uint256) {
         return stakers[_account].reward;
     }
 
-    function getStakeruserRewardPerToken(
-        address _account
-    ) public view returns (uint) {
+    function getStakeruserRewardPerToken(address _account) public view returns (uint256) {
         return stakers[_account].userRewardPerToken;
     }
 }
