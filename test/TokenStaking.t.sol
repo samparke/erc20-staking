@@ -17,6 +17,8 @@ contract TokenStakingTest is Test {
     address owner = address(this);
     address user = makeAddr("user");
 
+    event Staked(address indexed user, uint256 amount);
+
     function setUp() public {
         token = new MockERC20();
         staking = new TokenStaking(IERC20(token));
@@ -69,5 +71,31 @@ contract TokenStakingTest is Test {
 
         assertEq(staking.stakedBalance(user), 5 ether);
         assertEq(staking.totalStaked(), 5 ether);
+
+        vm.stopPrank();
+    }
+
+    function testStakeEvent() public {
+        vm.startPrank(user);
+        token.approve(address(staking), 10 ether);
+
+        vm.expectEmit(true, false, false, true);
+        emit Staked(user, 5 ether);
+        staking.stake(5 ether);
+
+        vm.stopPrank();
+    }
+
+    // test unstake
+
+    function testUnstake() public {
+        vm.startPrank(user);
+
+        token.approve(address(staking), 10 ether);
+        staking.stake(5 ether);
+        staking.unstake(2 ether);
+
+        assertEq(staking.stakedBalance(user), 3 ether);
+        assertEq(staking.totalStaked(), 3 ether);
     }
 }
