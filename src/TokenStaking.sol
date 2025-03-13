@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 contract TokenStaking {
     using SafeERC20 for IERC20;
 
-    address owner;
+    address public owner;
 
     IERC20 public immutable stakingToken;
     IERC20 public immutable rewardsToken;
