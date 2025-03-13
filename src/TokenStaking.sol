@@ -144,7 +144,7 @@ contract TokenStaking {
         duration = _duration;
     }
 
-    function notfiyRewardAmount(
+    function notifyRewardAmount(
         uint _amount
     ) external onlyOwner updateReward(address(0)) {
         if (block.timestamp >= finishAt) {
@@ -162,5 +162,27 @@ contract TokenStaking {
 
         finishAt = block.timestamp + duration;
         updatedAt = block.timestamp;
+    }
+
+    function getStakerAmountStaked(
+        address _account
+    ) public view returns (uint) {
+        return stakers[_account].amountStaked;
+    }
+
+    function getStakerLastTimeStaked(
+        address _account
+    ) public view returns (uint) {
+        return stakers[_account].lastTimeStaked;
+    }
+
+    function getStakerReward(address _account) public view returns (uint) {
+        return stakers[_account].reward;
+    }
+
+    function getStakeruserRewardPerToken(
+        address _account
+    ) public view returns (uint) {
+        return stakers[_account].userRewardPerToken;
     }
 }
